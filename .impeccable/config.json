@@ -8,6 +8,24 @@
         "value": "arial",
         "createdAt": "2026-09-09T09:04:30.778Z",
         "reason": "Fallback système par défaut du scaffold create-next-app, pas un choix typographique : la vraie typo (pixel/8-bit + police lisible) est prévue à l'Étape 2 DA du PLAN.md, pas encore atteinte"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.65rem",
+        "files": [
+          "src/app/globals.css"
+        ],
+        "createdAt": "2026-09-09T21:07:36.264Z",
+        "reason": "canonical definition of DESIGN.md's documented label type step (0.6rem-0.65rem), not a drifted literal"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "0.6rem",
+        "files": [
+          "src/app/globals.css"
+        ],
+        "createdAt": "2026-09-09T21:07:36.387Z",
+        "reason": "canonical definition of DESIGN.md's documented label type step (0.6rem-0.65rem), not a drifted literal"
       }
     ]
   }

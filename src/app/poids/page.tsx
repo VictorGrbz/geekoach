@@ -1,52 +1,142 @@
 import Link from "next/link";
+import { getProfil } from "@/db/profil";
 import { listPoids } from "@/db/poids";
 import { saveEntreePoids } from "./actions";
+import { PageHeader } from "@/components/page-header";
+import { PoidsChart } from "@/components/poids-chart";
+import { Field, buttonClass, inputClass } from "@/components/field";
+import { deltaSurFenetre, filtrerParPeriode, moyenneRecente } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
 
-export default async function PoidsPage() {
-  const entrees = await listPoids();
+const PERIODES = [
+  { label: "7 jours", jours: 7 },
+  { label: "30 jours", jours: 30 },
+  { label: "90 jours", jours: 90 },
+  { label: "Tout", jours: null },
+] as const;
+
+export default async function PoidsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periode?: string }>;
+}) {
+  const { periode } = await searchParams;
+  const periodeJours = periode ? Number(periode) : 90;
+  const periodeActive = Number.isFinite(periodeJours) ? periodeJours : null;
+
+  const [profil, entreesDesc] = await Promise.all([getProfil(), listPoids(500)]);
+  const entreesAsc = [...entreesDesc].reverse();
+  const dernierPoids = entreesAsc.at(-1) ?? null;
+  const delta90 = deltaSurFenetre(entreesAsc, 90);
+  const moyenne7 = moyenneRecente(entreesAsc, 7);
+
+  const fenetre = filtrerParPeriode(
+    entreesAsc.map((e) => ({ ...e, date: e.mesureA })),
+    periodeActive,
+  );
 
   return (
-    <div className="mx-auto max-w-xl px-6 py-12">
-      <Link href="/" className="text-sm text-zinc-500 hover:underline">
-        &larr; Accueil
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold">Suivi de poids</h1>
+    <div className="min-h-full">
+      <PageHeader
+        numeral="II"
+        title="Poids"
+        description="Le tracé se précise à chaque relevé — la ligne pointillée marque l'objectif fixé dans le profil."
+        meta={dernierPoids && new Date(dernierPoids.mesureA).toLocaleDateString("fr-FR")}
+      />
 
-      <form action={saveEntreePoids} className="mt-8 flex items-end gap-3">
-        <label className="flex flex-1 flex-col gap-1">
-          <span className="text-sm font-medium">Poids (kg)</span>
-          <input
-            type="number"
-            step="0.1"
-            name="valeur"
-            required
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-black"
-          />
-        </label>
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-white dark:bg-white dark:text-black"
-        >
-          Enregistrer
-        </button>
-      </form>
+      <div className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-10 sm:px-10">
+        {dernierPoids ? (
+          <section>
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <span className="font-[family-name:var(--font-display)] text-5xl text-fg">
+                {dernierPoids.valeur}
+              </span>
+              <span className="text-base text-fg-muted">kg</span>
+              {delta90 != null && (
+                <span className="text-sm text-fg-muted">
+                  {delta90 > 0 ? "+" : ""}
+                  {delta90.toFixed(1)} kg / 90 jours
+                </span>
+              )}
+            </div>
+            {moyenne7 != null && (
+              <p className="mt-1 text-xs text-fg-muted">Moyenne 7 jours : {moyenne7.toFixed(1)} kg</p>
+            )}
 
-      <ul className="mt-8 flex flex-col gap-2">
-        {entrees.map((entree) => (
-          <li
-            key={entree.id}
-            className="flex justify-between rounded border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800"
-          >
-            <span>{entree.valeur} kg</span>
-            <span className="text-zinc-500">{new Date(entree.mesureA).toLocaleString("fr-FR")}</span>
-          </li>
-        ))}
-        {entrees.length === 0 && (
-          <li className="text-sm text-zinc-500">Aucune entrée pour le moment.</li>
+            <div className="mt-6 flex items-center gap-1 border-b border-line pb-4">
+              {PERIODES.map((p) => {
+                const isActive = p.jours === periodeActive;
+                return (
+                  <Link
+                    key={p.label}
+                    href={p.jours === null ? "/poids?periode=all" : `/poids?periode=${p.jours}`}
+                    className={`tracked text-label border px-3 py-1.5 transition ${
+                      isActive
+                        ? "border-cyan-dim text-cyan"
+                        : "border-transparent text-fg-muted hover:text-fg"
+                    }`}
+                  >
+                    {p.label}
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 border border-line bg-ink-900/60 px-4 py-4 sm:px-6">
+              <PoidsChart
+                points={fenetre.map((p) => ({ date: p.mesureA, valeur: p.valeur }))}
+                objectif={profil?.poidsObjectif}
+                height={260}
+              />
+            </div>
+          </section>
+        ) : (
+          <p className="text-sm text-fg-muted">
+            Aucune pesée relevée pour l&apos;instant. Enregistrez la première ci-dessous.
+          </p>
         )}
-      </ul>
+
+        <section className="border border-line bg-ink-900/60 px-6 py-6 sm:px-8">
+          <h2 className="tracked text-label text-fg-muted">Noter une pesée</h2>
+          <form action={saveEntreePoids} className="mt-4 flex flex-wrap items-end gap-4">
+            <Field label="Poids (kg)">
+              <input
+                type="number"
+                step="0.1"
+                name="valeur"
+                required
+                className={`${inputClass} w-32`}
+              />
+            </Field>
+            <button type="submit" className={buttonClass}>
+              Enregistrer
+            </button>
+          </form>
+        </section>
+
+        <section>
+          <h2 className="tracked text-label text-fg-muted">Historique</h2>
+          <ul className="mt-3 flex flex-col divide-y divide-line border-y border-line">
+            {[...fenetre].reverse().map((e) => (
+              <li key={e.id} className="flex items-baseline justify-between gap-4 py-3 text-sm">
+                <span className="text-fg">{e.valeur} kg</span>
+                <span className="text-fg-muted">
+                  {new Date(e.mesureA).toLocaleString("fr-FR", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </li>
+            ))}
+            {fenetre.length === 0 && (
+              <li className="py-3 text-sm text-fg-muted">Aucune entrée sur cette période.</li>
+            )}
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }

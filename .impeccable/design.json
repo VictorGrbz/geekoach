@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-09T00:00:00.000Z",
+  "title": "Design System: Geekoach",
+  "extensions": {
+    "colorMeta": {
+      "cyan": { "role": "primary", "displayName": "Mist Cyan", "canonical": "#a7e6ee", "tonalRamp": ["#173033", "#1f4147", "#295863", "#397684", "#5a9aa5", "#83bcc4", "#a7e6ee", "#d4f4f8"] },
+      "cyan-dim": { "role": "primary", "displayName": "Dim Cyan", "canonical": "#6fa8b3", "tonalRamp": ["#132427", "#1c3336", "#274448", "#33585d", "#4c7d84", "#6fa8b3", "#9cc7cf", "#cee6ea"] },
+      "cyan-glow": { "role": "primary", "displayName": "Cyan Glow", "canonical": "rgba(167, 230, 238, 0.28)" },
+      "ink-950": { "role": "neutral", "displayName": "Slate Ink (page ground)", "canonical": "#313842", "tonalRamp": ["#15181c", "#1e2227", "#272c33", "#313842", "#4a5462", "#68737f", "#8b96a2", "#c3cbd3"] },
+      "ink-900": { "role": "neutral", "displayName": "Panel Ink", "canonical": "#373f4b", "tonalRamp": ["#17191e", "#20242b", "#2a2f37", "#373f4b", "#4f5966", "#6e7885", "#919aa5", "#c6ccd3"] },
+      "ink-850": { "role": "neutral", "displayName": "Tooltip Ink", "canonical": "#3b4553", "tonalRamp": ["#181b20", "#222731", "#2d333e", "#3b4553", "#565f6d", "#767e8a", "#98a0aa", "#c9cfd6"] },
+      "ink-800": { "role": "neutral", "displayName": "Field Ink", "canonical": "#404b5a", "tonalRamp": ["#191d23", "#242a33", "#303844", "#404b5a", "#5a6575", "#7a8393", "#9ba2af", "#cbd0d8"] },
+      "fg": { "role": "neutral", "displayName": "Foreground", "canonical": "#e6ebf2" },
+      "fg-muted": { "role": "neutral", "displayName": "Muted Foreground", "canonical": "#9ba5b4" },
+      "fg-faint": { "role": "neutral", "displayName": "Faint Foreground", "canonical": "#5b6576" },
+      "line": { "role": "neutral", "displayName": "Hairline", "canonical": "rgba(226, 232, 240, 0.11)" },
+      "line-strong": { "role": "neutral", "displayName": "Hairline Strong", "canonical": "rgba(226, 232, 240, 0.18)" },
+      "amber": { "role": "neutral", "displayName": "Amber (declared, unused)", "canonical": "#d9b56a" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Cinzel Display", "purpose": "Page headlines and large current-value figures (e.g. current weight in kg). Sentence case, not tracked." },
+      "label": { "displayName": "Tracked Label", "purpose": "The .tracked utility: region numerals/titles, meta text, field labels, button text, tab labels — always uppercase, always 0.14em letter-spacing." },
+      "body": { "displayName": "Inter Body", "purpose": "All running text, list rows, form values, chart tooltips." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "transition-standard", "value": "transition (Tailwind default ~150ms ease)", "purpose": "Button/link/tab hover and focus-border transitions; no custom easing curve observed in the build." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The system's only button variant: low-fill, bordered, tracked label text.",
+      "html": "<button class=\"ds-btn-primary\">Enregistrer</button>",
+      "css": ".ds-btn-primary { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.65rem; font-weight: 600; border: 1px solid rgba(111,168,179,0.5); background: rgba(167,230,238,0.1); color: #a7e6ee; padding: 10px 20px; border-radius: 0; transition: background 0.15s, border-color 0.15s; } .ds-btn-primary:hover { border-color: #a7e6ee; background: rgba(167,230,238,0.2); } .ds-btn-primary:focus-visible { outline: 1.5px solid #a7e6ee; outline-offset: 3px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Square-cornered field on a darker-than-panel fill, tracked Cinzel label above.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Poids (kg)</span><input class=\"ds-input\" type=\"number\" step=\"0.1\" placeholder=\"0.0\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-field-label { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.65rem; color: #9ba5b4; } .ds-input { border-radius: 0; border: 1px solid rgba(226,232,240,0.11); background: rgba(49,56,66,0.6); padding: 10px 12px; font-size: 0.875rem; color: #e6ebf2; font-family: 'Inter', system-ui, sans-serif; transition: border-color 0.15s; } .ds-input::placeholder { color: #9ba5b4; } .ds-input:focus { border-color: #6fa8b3; outline: none; }"
+    },
+    {
+      "name": "Region Panel",
+      "kind": "card",
+      "refersTo": "region-panel",
+      "description": "The core container: hairline-bordered, header/body/footer strips, no radius, no shadow.",
+      "html": "<section class=\"ds-region-panel\"><header class=\"ds-region-header\"><h2 class=\"ds-region-title\">II · Poids</h2></header><div class=\"ds-region-body\">Contenu de la région.</div></section>",
+      "css": ".ds-region-panel { border: 1px solid rgba(226,232,240,0.11); background: rgba(55,63,75,0.6); } .ds-region-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-bottom: 1px solid rgba(226,232,240,0.11); padding: 16px 24px; } .ds-region-title { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem; color: #9ba5b4; } .ds-region-body { padding: 24px; color: #e6ebf2; font-family: 'Inter', system-ui, sans-serif; }"
+    },
+    {
+      "name": "Mist Region (unsurveyed placeholder)",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Signature honesty device: a dashed-border placeholder for a region with no data yet, instead of a fake empty state.",
+      "html": "<section class=\"ds-mist-region\"><h2 class=\"ds-mist-title\">IV · Quêtes</h2><p class=\"ds-mist-tag\">Région sous la brume</p><p class=\"ds-mist-note\">Pas encore cartographiée.</p></section>",
+      "css": ".ds-mist-region { border: 1px dashed rgba(226,232,240,0.11); padding: 32px 24px; text-align: center; } .ds-mist-title { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.75rem; color: #9ba5b4; } .ds-mist-tag { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.14em; margin-top: 12px; font-size: 1.125rem; color: #9ba5b4; } .ds-mist-note { margin-top: 8px; font-size: 0.875rem; color: #9ba5b4; max-width: 24rem; margin-left: auto; margin-right: auto; }"
+    },
+    {
+      "name": "Sealed Region Badge",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Double-ring numeral seal marking a completed region; the system's only circular, status-bearing shape (replaced a flat badge draft during finish review).",
+      "html": "<span class=\"ds-seal-outer\"><span class=\"ds-seal-inner\">II</span></span>",
+      "css": ".ds-seal-outer { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 999px; border: 1px solid rgba(111,168,179,0.6); padding: 2px; } .ds-seal-inner { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; border-radius: 999px; border: 1px dashed rgba(111,168,179,0.5); font-size: 0.55rem; color: #a7e6ee; }"
+    },
+    {
+      "name": "Period Filter Tabs",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Hairline-bordered tab row for chart period selection; active tab gets a cyan bottom border and cyan text, no fill.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab ds-tab-active\">90 jours</a><a class=\"ds-tab\">Tout</a></nav>",
+      "css": ".ds-tabs { display: flex; align-items: center; gap: 4px; } .ds-tab { font-family: 'Cinzel', serif; text-transform: uppercase; letter-spacing: 0.14em; font-size: 0.65rem; padding: 6px 12px; border: 1px solid transparent; color: #9ba5b4; transition: color 0.15s, border-color 0.15s; } .ds-tab:hover { color: #e6ebf2; } .ds-tab-active { border-color: #6fa8b3; color: #a7e6ee; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Cartographer's Map of Hallownest",
+    "overview": "Geekoach reads as a hand-surveyed map, not a fitness dashboard. The world is a patinated slate-blue field, engraved with thin hairlines rather than boxed cards, where a single pale-cyan halo stands in for a lamp held over unfinished territory. Regions of the map — Profil, Poids, Séances, Quêtes, Coach — are either surveyed (rendered with real data and a hairline border) or still under mist (rendered as a dashed-border placeholder with muted, honest language: \"Région sous la brume\"). Nothing fakes completion; an unsurveyed region says so. Typography carries the cartographer voice: Cinzel in tight, wide-spaced small caps for numerals, region titles, and labels (the ink of hand-lettered map legends), Inter for every sentence of running text and data (legible, modern, never decorative). The pairing is deliberately asymmetric — display/label is ornamental and rare, body is plain and load-bearing. The system rejects near-black \"app\" darkness (the comp and the shipped build both land on a lived-in slate-blue, #313842, not #0a0a0a) and rejects dashboard chrome — no card-shadow elevation, no icon-driven nav, no colored status chips. Depth comes from a single radial cyan glow at the top of the page and from border hairlines at two opacities, never from shadow.",
+    "keyCharacteristics": [
+      "Slate-blue ink field with a single pale-cyan accent, used sparingly (links, active states, chart line, focus rings)",
+      "Cinzel small-caps for all labels/numerals/headings; Inter for all body and data",
+      "Regions are hairline-bordered panels or dashed-border \"mist\" placeholders — never rounded cards",
+      "Sharp corners everywhere (border-radius: 0); the only circular forms are the sealed-region badge and the scrollbar thumb",
+      "A numbered seal (double-ring, roman numeral) marks a region as complete, not a checkmark or a colored badge"
+    ],
+    "rules": [
+      { "name": "The One Halo Rule", "body": "Color is scarce: cyan appears only as accent (line, link, active state, focus ring, seal), never as a background fill. Every surface is slate-blue-on-slate-blue; the accent's rarity is what makes it read as a lamp, not a UI color.", "section": "colors" },
+      { "name": "The Tracked-Label Rule", "body": "Any Cinzel usage below headline size is always uppercase, always letter-spaced at 0.14em via the shared .tracked class — never a bare small caption. Small text is either plain Inter body copy or a tracked Cinzel label; there is no intermediate style.", "section": "typography" },
+      { "name": "The No-Shadow Rule", "body": "Nothing casts a shadow. Separation between surfaces is drawn with a hairline border or a translucent background tint, never box-shadow. This is a hairline-and-glow world, not a lifted-card world.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every corner square (border-radius: 0) except the sealed-region badge and the scrollbar thumb, which are the system's only confirmed circular forms.",
+      "Do reserve cyan for accent roles only (line, link, active tab, focus ring, chart line, seal) — never as a panel or button fill above 20% opacity.",
+      "Do render an unsurveyed region as a dashed-border \"mist\" placeholder with plain language about what's missing, rather than an empty chart or a fabricated zero-state metric.",
+      "Do pair every Cinzel usage with the tracked/uppercase/0.14em treatment; Inter carries all sentence-case text.",
+      "Do use the double-ring numeral badge for \"sealed/complete\" states; it is the system's one status-indicator shape."
+    ],
+    "donts": [
+      "Don't add box-shadows or lifted-card elevation; depth comes only from the single radial glow and the two-step hairline border system.",
+      "Don't introduce kicker/eyebrow labels above headings — the craft floor bans this device project-wide, and it was removed from this build during finish review; it is not a pattern to revive on future surfaces.",
+      "Don't darken the page ground toward near-black; the slate-blue ink (#313842) is the confirmed ground color, corrected up from an earlier near-black draft to match the approved comp.",
+      "Don't use a filled/solid button; every button in the system is the low-fill bordered treatment (bg-cyan/10 at rest).",
+      "Don't invent a colored status chip or badge for \"complete\" states; use the double-ring seal instead."
+    ]
+  }
+}

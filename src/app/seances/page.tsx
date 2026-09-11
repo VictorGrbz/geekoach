@@ -1,90 +1,140 @@
 import Link from "next/link";
 import { listSeances } from "@/db/seances";
 import { saveSeance } from "./actions";
+import { PageHeader } from "@/components/page-header";
+import { SeancesChart } from "@/components/seances-chart";
+import { Field, buttonClass, inputClass } from "@/components/field";
+import { agregerParSemaine, debutSemaineCourante, filtrerParPeriode } from "@/lib/stats";
 
 export const dynamic = "force-dynamic";
 
-export default async function SeancesPage() {
-  const seances = await listSeances();
+const PERIODES = [
+  { label: "4 semaines", jours: 28 },
+  { label: "12 semaines", jours: 84 },
+  { label: "Tout", jours: null },
+] as const;
+
+export default async function SeancesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periode?: string }>;
+}) {
+  const { periode } = await searchParams;
+  const periodeJours = periode ? Number(periode) : 84;
+  const periodeActive = Number.isFinite(periodeJours) ? periodeJours : null;
+
+  const seances = await listSeances(500);
+  const seancesAsc = [...seances].reverse();
+  const debutSemaine = debutSemaineCourante();
+  const cetteSemaine = seances.filter((s) => new Date(s.effectueeA) >= debutSemaine).length;
+
+  const fenetre = filtrerParPeriode(
+    seancesAsc.map((s) => ({ ...s, date: s.effectueeA })),
+    periodeActive,
+  );
+  const parSemaine = agregerParSemaine(fenetre);
 
   return (
-    <div className="mx-auto max-w-xl px-6 py-12">
-      <Link href="/" className="text-sm text-zinc-500 hover:underline">
-        &larr; Accueil
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold">Séances</h1>
+    <div className="min-h-full">
+      <PageHeader
+        numeral="III"
+        title="Séances"
+        description="Chaque séance loguée trace une marque sur la région — la fréquence hebdomadaire se lit d'un coup d'œil."
+        meta={`${cetteSemaine} cette semaine`}
+      />
 
-      <form action={saveSeance} className="mt-8 flex flex-col gap-4">
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Type</span>
-          <input
-            type="text"
-            name="type"
-            required
-            placeholder="cardio, renforcement, étirements..."
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-black"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Durée (minutes)</span>
-          <input
-            type="number"
-            name="dureeMinutes"
-            required
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-black"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Exercices (séparés par des virgules)</span>
-          <input
-            type="text"
-            name="exercices"
-            placeholder="pompes, squats, gainage"
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-black"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Ressenti</span>
-          <input
-            type="text"
-            name="ressenti"
-            className="rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-black"
-          />
-        </label>
-
-        <button
-          type="submit"
-          className="mt-2 rounded bg-black px-4 py-2 text-white dark:bg-white dark:text-black"
-        >
-          Enregistrer
-        </button>
-      </form>
-
-      <ul className="mt-8 flex flex-col gap-2">
-        {seances.map((seance) => (
-          <li
-            key={seance.id}
-            className="rounded border border-zinc-200 px-3 py-2 text-sm dark:border-zinc-800"
-          >
-            <div className="flex justify-between">
-              <span className="font-medium">
-                {seance.type} — {seance.dureeMinutes} min
-              </span>
-              <span className="text-zinc-500">{new Date(seance.effectueeA).toLocaleString("fr-FR")}</span>
+      <div className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-10 sm:px-10">
+        {seances.length > 0 ? (
+          <section>
+            <div className="flex items-center gap-1 border-b border-line pb-4">
+              {PERIODES.map((p) => {
+                const isActive = p.jours === periodeActive;
+                return (
+                  <Link
+                    key={p.label}
+                    href={p.jours === null ? "/seances?periode=all" : `/seances?periode=${p.jours}`}
+                    className={`tracked text-label border px-3 py-1.5 transition ${
+                      isActive
+                        ? "border-cyan-dim text-cyan"
+                        : "border-transparent text-fg-muted hover:text-fg"
+                    }`}
+                  >
+                    {p.label}
+                  </Link>
+                );
+              })}
             </div>
-            {seance.exercices.length > 0 && (
-              <p className="mt-1 text-zinc-500">{seance.exercices.join(", ")}</p>
-            )}
-            {seance.ressenti && <p className="mt-1 text-zinc-500">Ressenti : {seance.ressenti}</p>}
-          </li>
-        ))}
-        {seances.length === 0 && (
-          <li className="text-sm text-zinc-500">Aucune séance pour le moment.</li>
+            <div className="mt-6 border border-line bg-ink-900/60 px-4 py-4 sm:px-6">
+              <SeancesChart points={parSemaine} height={220} />
+            </div>
+          </section>
+        ) : (
+          <p className="text-sm text-fg-muted">
+            Aucune séance relevée pour l&apos;instant. Enregistrez la première ci-dessous.
+          </p>
         )}
-      </ul>
+
+        <section className="border border-line bg-ink-900/60 px-6 py-6 sm:px-8">
+          <h2 className="tracked text-label text-fg-muted">Loguer une séance</h2>
+          <form action={saveSeance} className="mt-4 flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Type">
+                <input
+                  type="text"
+                  name="type"
+                  required
+                  placeholder="cardio, renforcement, étirements..."
+                  className={inputClass}
+                />
+              </Field>
+              <Field label="Durée (minutes)">
+                <input type="number" name="dureeMinutes" required className={inputClass} />
+              </Field>
+            </div>
+            <Field label="Exercices (séparés par des virgules)">
+              <input
+                type="text"
+                name="exercices"
+                placeholder="pompes, squats, gainage"
+                className={inputClass}
+              />
+            </Field>
+            <Field label="Ressenti">
+              <input type="text" name="ressenti" className={inputClass} />
+            </Field>
+            <button type="submit" className={`${buttonClass} self-start`}>
+              Enregistrer
+            </button>
+          </form>
+        </section>
+
+        <section>
+          <h2 className="tracked text-label text-fg-muted">Historique</h2>
+          <ul className="mt-3 flex flex-col divide-y divide-line border-y border-line">
+            {[...fenetre].reverse().map((s) => (
+              <li key={s.id} className="py-3 text-sm">
+                <div className="flex items-baseline justify-between gap-4">
+                  <span className="text-fg">{s.type}</span>
+                  <span className="tracked text-label text-fg-muted">
+                    {new Date(s.effectueeA).toLocaleDateString("fr-FR", {
+                      day: "2-digit",
+                      month: "short",
+                    })}{" "}
+                    · {s.dureeMinutes} min
+                  </span>
+                </div>
+                {s.exercices.length > 0 && (
+                  <p className="mt-1 text-fg-muted">{s.exercices.join(", ")}</p>
+                )}
+                {s.ressenti && <p className="mt-1 text-fg-muted">Ressenti : {s.ressenti}</p>}
+              </li>
+            ))}
+            {fenetre.length === 0 && (
+              <li className="py-3 text-sm text-fg-muted">Aucune séance sur cette période.</li>
+            )}
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }

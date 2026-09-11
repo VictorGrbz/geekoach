@@ -13,5 +13,5 @@ const sql = postgres(process.env.DATABASE_URL, { ssl: false });
 const schema = readFileSync(join(__dirname, "../src/db/schema.sql"), "utf8");
 
 await sql.unsafe(schema);
-console.log("Migration appliquée : tables `profil`, `poids`, `seances` prêtes.");
+console.log("Migration appliquée : tables `profil`, `poids`, `seances`, `messages` prêtes.");
 await sql.end();

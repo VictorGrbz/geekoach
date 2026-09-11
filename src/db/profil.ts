@@ -11,7 +11,7 @@ export type Profil = {
 
 function toProfil(row: {
   poids_objectif: string | null;
-  echeance: string | null;
+  echeance: string | Date | null;
   equipement: string[];
   contraintes_sante: string[];
   preferences: Record<string, unknown>;
@@ -19,7 +19,7 @@ function toProfil(row: {
 }): Profil {
   return {
     poidsObjectif: row.poids_objectif !== null ? Number(row.poids_objectif) : null,
-    echeance: row.echeance,
+    echeance: row.echeance ? new Date(row.echeance).toISOString().slice(0, 10) : null,
     equipement: row.equipement,
     contraintesSante: row.contraintes_sante,
     preferences: row.preferences,
