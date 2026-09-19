@@ -104,7 +104,7 @@ Note pour l'Artisan : sans clé `OPENAI_API_KEY` configurée, Impeccable ne gén
 - `recharts` ajouté aux dépendances.
 - Rien n'est commité (le cycle Git de ce projet passe par `/commit`, jamais déclenché automatiquement) — à faire par Victor quand il le souhaite.
 
-## Étape 4 : chat coach conversationnel (API Gemini)
+## Étape 4 : chat coach conversationnel (API Gemini) — Fait
 
 - **Objectif** : interface de chat qui injecte automatiquement à chaque échange le profil, l'équipement disponible, le temps disponible du jour et l'historique récent (séances, tendance de poids) en contexte. Le coach propose des séances adaptées à l'équipement/temps disponible, ajuste ses propositions selon la progression réelle (plateau, régression, progression rapide), et peut mettre à jour un champ du profil énoncé en langage naturel dans la conversation (extraction structurée depuis le chat).
 - **Fichiers concernés** : route API de chat, service d'appel SDK Google Gemini (`@google/genai`), configuration `GEMINI_API_KEY` en variable d'environnement Coolify.
@@ -120,7 +120,14 @@ Note pour l'Artisan : cette étape gagnerait à être menée avec des subagents 
 - Route `src/app/api/chat/route.ts` (non streamée), garde-fou quota quotidien (seuil de sécurité à 230 requêtes/jour) + désactivation du bouton d'envoi pendant une requête côté UI.
 - Page `/coach` (`src/components/chat-panel.tsx`) dans le langage visuel existant (liste `divide-y`, labels tracés Cinzel, pas de bulles colorées). Région V de l'accueil : ne montre plus jamais "sous la brume", remplacée par un aperçu du dernier échange ou un CTA vers `/coach`.
 - `@google/genai` ajouté aux dépendances, `GEMINI_API_KEY` documentée dans `.env.example`.
-- **Reste à faire par Victor avant de considérer l'étape faite** : exécuter `npm run db:migrate` une fois le tunnel SSH vers Postgres actif (la table `messages` n'a pas pu être créée depuis cette session, tunnel non monté), obtenir une clé sur Google AI Studio et la renseigner dans `.env.local` (placeholder vide déjà présent), puis vérifier manuellement les critères de fait (réponse tenant compte du profil sans répétition, mise à jour de profil en langage naturel bien répercutée sur `/profil`, commentaire de tendance, persistance de l'historique au rechargement).
+- Tunnel SSH monté et `npm run db:migrate` exécuté (table `messages` déjà présente, migration idempotente confirmée), `GEMINI_API_KEY` renseignée par Victor dans `.env.local`.
+- Vérification de bout en bout menée avec des données de test temporaires (profil, pesées sur 22 jours, une séance) insérées puis supprimées après coup pour ne pas polluer la vraie base :
+  - Le coach tient compte de l'équipement et du temps disponible donnés dans le message sans que Victor les répète, et commente la tendance de poids réelle (`classerTendance`) sans y être invité.
+  - Une information de profil énoncée en langage naturel ("j'ai acheté un vélo d'appartement") déclenche `update_profil` en delta additif, correctement fusionnée et visible immédiatement sur `/profil`.
+  - L'historique de conversation persiste au rechargement de `/coach` (confirmé via rendu serveur, pas seulement l'état client).
+  - La région V (Coach) de l'accueil affiche l'aperçu du dernier échange réel, plus jamais "sous la brume".
+  - Garde-fou de quota (230/jour) et désactivation du bouton d'envoi pendant une requête vérifiés par lecture de code (non testables en conditions réelles sans épuiser le quota gratuit).
+- Aucun bug trouvé, aucun correctif nécessaire. `npm run build` propre.
 - Rien n'est commité (même règle qu'à l'Étape 3 : cycle Git via `/commit`, à faire par Victor quand il le souhaite).
 
 ## Étape 5 : gamification complète (V1 sans report)
