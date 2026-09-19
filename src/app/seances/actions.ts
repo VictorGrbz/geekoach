@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { enregistrerSeance } from "@/db/activites";
+import { deleteSeance } from "@/db/seances";
 
 const seanceSchema = z.object({
   type: z.string().min(1),
@@ -36,4 +37,11 @@ export async function saveSeance(formData: FormData) {
   revalidatePath("/seances");
   revalidatePath("/");
   revalidatePath("/quetes");
+}
+
+export async function removeSeance(formData: FormData) {
+  const id = z.coerce.number().int().positive().parse(formData.get("id"));
+  await deleteSeance(id);
+  revalidatePath("/seances");
+  revalidatePath("/");
 }

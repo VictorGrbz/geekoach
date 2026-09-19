@@ -157,12 +157,33 @@ Note pour l'Artisan : étape la plus lourde en architecture (plusieurs systèmes
 - **Destination** : infrastructure self-hosted (voir `context/infra.md`, à mettre à jour une fois cette étape faite).
 - **Critère de fait** : le portail est accessible depuis un mobile hors réseau local uniquement après authentification Cloudflare Access.
 
-## Étape 7 : Finalisation
+Étape entièrement manuelle côté dashboards externes (Coolify, Cloudflare) — aucun outil ne permet de l'automatiser depuis Claude Code. Guide détaillé écrit dans `docs/COOLIFY-TUNNEL.md` (remplace le `docs/CLOUDFLARE.md` de `portfolio-victor`, périmé depuis la bascule Vercel → Coolify+Tunnel du 2026-09-03). Checklist pour Victor :
+
+- [ ] Coolify : app `geekoach` créée depuis le repo GitHub, variables d'environnement de prod renseignées (`DATABASE_URL` interne au réseau Coolify — pas l'URL locale via tunnel SSH —, `GEMINI_API_KEY`), déploiement vérifié.
+- [ ] Cloudflare Tunnel : sous-domaine `geekoach.jess-vic.ovh` routé sur le tunnel existant du ProDesk (même tunnel que restaurant/boutique/reservation, pas un nouveau).
+- [ ] Cloudflare Zero Trust Access : application `Geekoach` sur `geekoach.jess-vic.ovh`, policy `Allow` limitée à `victor.garbez@gmail.com` seul.
+- [ ] Testé depuis un mobile hors réseau local (critère de fait).
+- [ ] `context/infra.md` mis à jour (nouvelle ligne du tableau + référence vers `docs/COOLIFY-TUNNEL.md`) — à valider avec Victor avant modification, ce fichier n'étant pas piloté par ce projet.
+
+## Étape 7 : Finalisation — Fait (P0+P1)
 
 - **Objectif** : rattraper les clichés génériques (polices/motifs surexploités, anti-patterns) que le passage par Claude Design ne filtre pas lui-même.
 - **Fichiers concernés** : ensemble du projet.
 - **Destination** : `livrables/sites-web/geekoach/`.
 - **Critère de fait** : `/finaliser` exécuté (audit → critique → validation → polish → doctor côté Impeccable) avant toute mise en accès distant définitive.
+
+**Fait** — `/finaliser` exécuté sur les 6 routes (`/`, `/profil`, `/poids`, `/seances`, `/coach`, `/quetes`) :
+- Audit technique : 16/20 (Good). Critique UX (dual-agent) : 18/36 — Acceptable, bas de fourchette.
+- Corrections P0+P1 appliquées (portée validée par Victor, P2/P3 laissés pour un futur passage) :
+  - Écran d'erreur stylé (`src/app/error.tsx`) — une saisie invalide ne sort plus Victor de la fiction vers l'écran Next.js générique.
+  - Texte fonctionnel sous 11px et contraste limite (4.47:1) corrigés au niveau des tokens (`--text-label`, `--text-label-sm`, `--fg-muted` dans `globals.css`) — un seul changement règle ~46+9 occurrences réparties sur toutes les routes.
+  - Suppression possible pour une pesée ou une séance (`deletePoids`, `deleteSeance`, bouton avec confirmation) — une erreur de saisie n'est plus irréversible. Ne recalcule pas rétroactivement XP/streak déjà accordés (hors scope de ce passage).
+  - Le sceau (`SealBadge`) ne rend plus de "✓" générique dans les quêtes/succès (contredisait la règle DESIGN.md "not a checkmark") — remplacé par un label tracké "Complétée"/"Débloqué".
+  - Bug corrigé au passage : `border-dashed` sans épaisseur de bordure sur les succès verrouillés (`achievement-row.tsx`) rendait la mise en scène "sous la brume" invisible ; correctif a lui-même révélé un manque de padding horizontal (nouveau finding `cramped-padding`), corrigé dans la foulée.
+- `/impeccable doctor` : aucune dérive détectée (`findings: []`).
+- `npm run build` et `npm run lint` propres après chaque étape de correction.
+- Findings P2/P3 restants (documentés, non corrigés à cette passe) : labels de formulaire trop longs en majuscules sur `/profil`/`/seances`, boss fight visuellement plat, pas de quick-log poids depuis l'accueil, pas d'accusé de réception immédiat à la sauvegarde, `aria-live` manquant sur le chat, largeur de ligne ~89 caractères par endroits, police Inter signalée "overused" (choix assumé), tirets cadratins dans le texte narratif de l'arc pilote.
+- Rien n'est commité (même règle que les étapes précédentes).
 
 ## Vérification automatique
 

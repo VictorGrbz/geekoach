@@ -1,5 +1,3 @@
-import { SealBadge } from "./seal-badge";
-
 export function QueteRow({
   titre,
   description,
@@ -23,7 +21,7 @@ export function QueteRow({
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1.5">
         {completee ? (
-          <SealBadge label="✓" />
+          <span className="tracked text-label text-cyan">Complétée</span>
         ) : (
           <span className="tracked text-label-sm text-fg-muted">
             {progression}/{objectif}

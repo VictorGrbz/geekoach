@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { enregistrerPoids } from "@/db/activites";
+import { deletePoids } from "@/db/poids";
 
 const poidsSchema = z.object({
   valeur: z.coerce.number().positive(),
@@ -23,4 +24,11 @@ export async function saveEntreePoids(formData: FormData) {
   revalidatePath("/poids");
   revalidatePath("/");
   revalidatePath("/quetes");
+}
+
+export async function removeEntreePoids(formData: FormData) {
+  const id = z.coerce.number().int().positive().parse(formData.get("id"));
+  await deletePoids(id);
+  revalidatePath("/poids");
+  revalidatePath("/");
 }

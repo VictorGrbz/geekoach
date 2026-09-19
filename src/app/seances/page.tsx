@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { listSeances } from "@/db/seances";
-import { saveSeance } from "./actions";
+import { saveSeance, removeSeance } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import { SeancesChart } from "@/components/seances-chart";
+import { DeleteButton } from "@/components/delete-button";
 import { Field, buttonClass, inputClass } from "@/components/field";
 import { agregerParSemaine, debutSemaineCourante, filtrerParPeriode } from "@/lib/stats";
 import { getGamificationEtat } from "@/db/gamification";
@@ -91,7 +92,7 @@ export default async function SeancesPage({
                 />
               </Field>
               <Field label="Durée (minutes)">
-                <input type="number" name="dureeMinutes" required className={inputClass} />
+                <input type="number" name="dureeMinutes" min={1} step={1} required className={inputClass} />
               </Field>
             </div>
             <Field label="Exercices (séparés par des virgules)">
@@ -118,12 +119,18 @@ export default async function SeancesPage({
               <li key={s.id} className="py-3 text-sm">
                 <div className="flex items-baseline justify-between gap-4">
                   <span className="text-fg">{s.type}</span>
-                  <span className="tracked text-label text-fg-muted">
-                    {new Date(s.effectueeA).toLocaleDateString("fr-FR", {
-                      day: "2-digit",
-                      month: "short",
-                    })}{" "}
-                    · {s.dureeMinutes} min
+                  <span className="flex items-baseline gap-4">
+                    <span className="tracked text-label text-fg-muted">
+                      {new Date(s.effectueeA).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "short",
+                      })}{" "}
+                      · {s.dureeMinutes} min
+                    </span>
+                    <form action={removeSeance}>
+                      <input type="hidden" name="id" value={s.id} />
+                      <DeleteButton confirmMessage={`Supprimer la séance "${s.type}" ?`} />
+                    </form>
                   </span>
                 </div>
                 {s.exercices.length > 0 && (

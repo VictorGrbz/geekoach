@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { getProfil } from "@/db/profil";
 import { listPoids } from "@/db/poids";
-import { saveEntreePoids } from "./actions";
+import { saveEntreePoids, removeEntreePoids } from "./actions";
 import { PageHeader } from "@/components/page-header";
 import { PoidsChart } from "@/components/poids-chart";
+import { DeleteButton } from "@/components/delete-button";
 import { Field, buttonClass, inputClass } from "@/components/field";
 import { deltaSurFenetre, filtrerParPeriode, moyenneRecente } from "@/lib/stats";
 import { getGamificationEtat } from "@/db/gamification";
@@ -116,6 +117,8 @@ export default async function PoidsPage({
               <input
                 type="number"
                 step="0.1"
+                min="1"
+                max="500"
                 name="valeur"
                 required
                 className={`${inputClass} w-32`}
@@ -133,13 +136,19 @@ export default async function PoidsPage({
             {[...fenetre].reverse().map((e) => (
               <li key={e.id} className="flex items-baseline justify-between gap-4 py-3 text-sm">
                 <span className="text-fg">{e.valeur} kg</span>
-                <span className="text-fg-muted">
-                  {new Date(e.mesureA).toLocaleString("fr-FR", {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                <span className="flex items-baseline gap-4">
+                  <span className="text-fg-muted">
+                    {new Date(e.mesureA).toLocaleString("fr-FR", {
+                      day: "2-digit",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <form action={removeEntreePoids}>
+                    <input type="hidden" name="id" value={e.id} />
+                    <DeleteButton confirmMessage={`Supprimer la pesée de ${e.valeur} kg ?`} />
+                  </form>
                 </span>
               </li>
             ))}

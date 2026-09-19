@@ -37,6 +37,10 @@ export async function listSeances(limit = 50): Promise<Seance[]> {
   return rows.map((row) => toSeance(row as Parameters<typeof toSeance>[0]));
 }
 
+export async function deleteSeance(id: number, sqlClient: SqlClient = getSql()): Promise<void> {
+  await sqlClient`DELETE FROM seances WHERE id = ${id}`;
+}
+
 export async function addSeance(
   input: {
     type: string;

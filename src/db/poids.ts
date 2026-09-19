@@ -20,6 +20,10 @@ export async function listPoids(limit = 90): Promise<EntreePoids[]> {
   }));
 }
 
+export async function deletePoids(id: number, sqlClient: SqlClient = getSql()): Promise<void> {
+  await sqlClient`DELETE FROM poids WHERE id = ${id}`;
+}
+
 export async function addPoids(
   input: { valeur: number; mesureA?: string },
   sqlClient: SqlClient = getSql(),

@@ -8,7 +8,7 @@
   --line: rgba(226, 232, 240, 0.11);
   --line-strong: rgba(226, 232, 240, 0.18);
   --fg: #e6ebf2;
-  --fg-muted: #9ba5b4;
+  --fg-muted: #a3adbc;
   --fg-faint: #5b6576;
   --cyan: #a7e6ee;
   --cyan-dim: #6fa8b3;
@@ -31,8 +31,8 @@
   --color-amber: var(--amber);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
-  --text-label: 0.65rem;
-  --text-label-sm: 0.6rem;
+  --text-label: 0.75rem;
+  --text-label-sm: 0.6875rem;
 }
 
 * {
