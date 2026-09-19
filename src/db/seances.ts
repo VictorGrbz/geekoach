@@ -1,4 +1,4 @@
-import { getSql } from "./index";
+import { getSql, type SqlClient } from "./index";
 
 export type Seance = {
   id: number;
@@ -37,13 +37,16 @@ export async function listSeances(limit = 50): Promise<Seance[]> {
   return rows.map((row) => toSeance(row as Parameters<typeof toSeance>[0]));
 }
 
-export async function addSeance(input: {
-  type: string;
-  dureeMinutes: number;
-  exercices: string[];
-  ressenti: string | null;
-}): Promise<Seance> {
-  const sql = getSql();
+export async function addSeance(
+  input: {
+    type: string;
+    dureeMinutes: number;
+    exercices: string[];
+    ressenti: string | null;
+  },
+  sqlClient: SqlClient = getSql(),
+): Promise<Seance> {
+  const sql = sqlClient;
   const rows = await sql`
     INSERT INTO seances (type, duree_minutes, exercices, ressenti)
     VALUES (${input.type}, ${input.dureeMinutes}, ${sql.json(input.exercices)}, ${input.ressenti})

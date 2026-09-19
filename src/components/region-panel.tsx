@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SealBadge } from "./seal-badge";
 
 export function RegionPanel({
   numeral,
@@ -24,10 +25,8 @@ export function RegionPanel({
       <div className="px-6 py-6 sm:px-8">{children}</div>
       {sealedNote && (
         <footer className="flex items-start gap-3 border-t border-line px-6 py-4 text-sm text-fg-muted sm:px-8">
-          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cyan-dim/60 p-0.5">
-            <span className="tracked text-label-sm flex h-full w-full items-center justify-center rounded-full border border-dashed border-cyan-dim/50 text-cyan">
-              {numeral}
-            </span>
+          <span className="mt-0.5">
+            <SealBadge label={numeral} />
           </span>
           <div>
             <p className="tracked text-label text-cyan/90">Région scellée</p>

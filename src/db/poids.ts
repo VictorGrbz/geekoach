@@ -1,4 +1,4 @@
-import { getSql } from "./index";
+import { getSql, type SqlClient } from "./index";
 
 export type EntreePoids = {
   id: number;
@@ -20,8 +20,11 @@ export async function listPoids(limit = 90): Promise<EntreePoids[]> {
   }));
 }
 
-export async function addPoids(input: { valeur: number; mesureA?: string }): Promise<EntreePoids> {
-  const sql = getSql();
+export async function addPoids(
+  input: { valeur: number; mesureA?: string },
+  sqlClient: SqlClient = getSql(),
+): Promise<EntreePoids> {
+  const sql = sqlClient;
   const rows = await sql`
     INSERT INTO poids (valeur, mesure_a)
     VALUES (${input.valeur}, COALESCE(${input.mesureA ?? null}, now()))

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addPoids } from "@/db/poids";
+import { enregistrerPoids } from "@/db/activites";
 
 const poidsSchema = z.object({
   valeur: z.coerce.number().positive(),
@@ -15,10 +15,12 @@ export async function saveEntreePoids(formData: FormData) {
     mesureA: (formData.get("mesureA") as string) || null,
   });
 
-  await addPoids({
+  await enregistrerPoids({
     valeur: parsed.valeur,
     mesureA: parsed.mesureA ?? undefined,
   });
 
   revalidatePath("/poids");
+  revalidatePath("/");
+  revalidatePath("/quetes");
 }

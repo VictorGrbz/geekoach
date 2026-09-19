@@ -6,6 +6,8 @@ import { PageHeader } from "@/components/page-header";
 import { PoidsChart } from "@/components/poids-chart";
 import { Field, buttonClass, inputClass } from "@/components/field";
 import { deltaSurFenetre, filtrerParPeriode, moyenneRecente } from "@/lib/stats";
+import { getGamificationEtat } from "@/db/gamification";
+import { progressionNiveau } from "@/lib/xp";
 
 export const dynamic = "force-dynamic";
 
@@ -25,11 +27,16 @@ export default async function PoidsPage({
   const periodeJours = periode ? Number(periode) : 90;
   const periodeActive = Number.isFinite(periodeJours) ? periodeJours : null;
 
-  const [profil, entreesDesc] = await Promise.all([getProfil(), listPoids(500)]);
+  const [profil, entreesDesc, gamificationEtat] = await Promise.all([
+    getProfil(),
+    listPoids(500),
+    getGamificationEtat(),
+  ]);
   const entreesAsc = [...entreesDesc].reverse();
   const dernierPoids = entreesAsc.at(-1) ?? null;
   const delta90 = deltaSurFenetre(entreesAsc, 90);
   const moyenne7 = moyenneRecente(entreesAsc, 7);
+  const progression = progressionNiveau(gamificationEtat.xpTotal);
 
   const fenetre = filtrerParPeriode(
     entreesAsc.map((e) => ({ ...e, date: e.mesureA })),
@@ -42,7 +49,12 @@ export default async function PoidsPage({
         numeral="II"
         title="Poids"
         description="Le tracé se précise à chaque relevé — la ligne pointillée marque l'objectif fixé dans le profil."
-        meta={dernierPoids && new Date(dernierPoids.mesureA).toLocaleDateString("fr-FR")}
+        meta={
+          <>
+            {dernierPoids && `${new Date(dernierPoids.mesureA).toLocaleDateString("fr-FR")} · `}
+            Niveau {progression.niveau} ({progression.xpDansNiveau}/{progression.xpRequisNiveau} XP)
+          </>
+        }
       />
 
       <div className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-10 sm:px-10">

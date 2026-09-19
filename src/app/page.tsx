@@ -3,19 +3,23 @@ import { getProfil } from "@/db/profil";
 import { listPoids } from "@/db/poids";
 import { listSeances } from "@/db/seances";
 import { listMessages } from "@/db/messages";
+import { getGamificationEtat } from "@/db/gamification";
 import { MistRegion, RegionPanel } from "@/components/region-panel";
 import { PoidsChart } from "@/components/poids-chart";
+import { XpBar } from "@/components/xp-bar";
 import { buttonClass } from "@/components/field";
 import { debutSemaineCourante, deltaSurFenetre, moyenneRecente } from "@/lib/stats";
+import { progressionNiveau } from "@/lib/xp";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [profil, poids, seances, messages] = await Promise.all([
+  const [profil, poids, seances, messages, gamificationEtat] = await Promise.all([
     getProfil(),
     listPoids(90),
     listSeances(6),
     listMessages(1),
+    getGamificationEtat(),
   ]);
 
   const poidsAsc = [...poids].reverse();
@@ -28,9 +32,16 @@ export default async function Home() {
   const debutSemaine = debutSemaineCourante();
   const seancesCetteSemaine = seances.filter((s) => new Date(s.effectueeA) >= debutSemaine).length;
 
-  const regionsRelevees = [true, poids.length > 0, seances.length > 0, messages.length > 0].filter(
-    Boolean,
-  ).length;
+  const progressionActive = seances.length > 0 || poids.length > 0;
+  const progression = progressionNiveau(gamificationEtat.xpTotal);
+
+  const regionsRelevees = [
+    true,
+    poids.length > 0,
+    seances.length > 0,
+    progressionActive,
+    messages.length > 0,
+  ].filter(Boolean).length;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-10 sm:px-10 sm:py-14">
@@ -169,11 +180,20 @@ export default async function Home() {
           />
         )}
 
-        <MistRegion
-          numeral="IV"
-          title="Quêtes"
-          note="Pas encore cartographiée — la couche de quêtes arrive à l'Étape 5 du plan."
-        />
+        {progressionActive ? (
+          <RegionPanel numeral="IV" title="Quêtes" meta={`Streak ${gamificationEtat.streakActuel} j`}>
+            <XpBar {...progression} />
+            <Link href="/quetes" className="tracked text-label mt-4 inline-block text-cyan hover:underline">
+              Voir la région entière &rarr;
+            </Link>
+          </RegionPanel>
+        ) : (
+          <MistRegion
+            numeral="IV"
+            title="Quêtes"
+            note="Pas encore cartographiée — enregistrez une séance ou une pesée pour que la progression démarre."
+          />
+        )}
 
         {messages.length > 0 ? (
           <RegionPanel numeral="V" title="Coach">

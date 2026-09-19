@@ -4,6 +4,12 @@ import { listSeances } from "@/db/seances";
 import { classerTendance, deltaSurFenetre, moyenneRecente, agregerParSemaine } from "@/lib/stats";
 import type { Content } from "@google/genai";
 import { listMessages } from "@/db/messages";
+import { getGamificationEtat } from "@/db/gamification";
+import { listQuetesActives } from "@/db/quetes";
+import { getArcActif } from "@/db/arcs";
+import { progressionNiveau } from "@/lib/xp";
+import { trouverTemplateParId } from "@/lib/quetes-catalogue";
+import { semaineCouranteArc } from "@/lib/arcs";
 
 const HISTORIQUE_MESSAGES_INJECTES = 20;
 
@@ -11,8 +17,34 @@ function ligneOuNonRenseigne(valeurs: string[]): string {
   return valeurs.length > 0 ? valeurs.join(", ") : "non renseigné";
 }
 
+async function buildContexteGamification(): Promise<string> {
+  const [etat, quetes, arc] = await Promise.all([getGamificationEtat(), listQuetesActives(), getArcActif()]);
+  const { niveau, xpDansNiveau, xpRequisNiveau } = progressionNiveau(etat.xpTotal);
+
+  const queteJour = quetes.find((q) => q.portee === "jour");
+  const queteSemaine = quetes.find((q) => q.portee === "semaine");
+  const templateJour = queteJour ? trouverTemplateParId(queteJour.templateId) : undefined;
+  const templateSemaine = queteSemaine ? trouverTemplateParId(queteSemaine.templateId) : undefined;
+
+  const arcLigne = arc
+    ? `${arc.titre} — semaine ${Math.min(semaineCouranteArc(arc.demarreA), arc.dureeSemaines)}/${arc.dureeSemaines}${arc.statut === "boss_en_cours" ? ` — BOSS FIGHT EN COURS : ${arc.bossTitre}` : ""}`
+    : "aucun arc actif";
+
+  return `## Progression (gamification)
+- Niveau actuel : ${niveau} (XP ${xpDansNiveau}/${xpRequisNiveau} vers le niveau suivant, total ${etat.xpTotal} XP)
+- Streak en cours : ${etat.streakActuel} jour(s) consécutifs (record : ${etat.streakRecord})
+- Quête du jour : ${templateJour && queteJour ? `${templateJour.titre} (${queteJour.progression}/${queteJour.objectif})` : "aucune"}
+- Quête de la semaine : ${templateSemaine && queteSemaine ? `${templateSemaine.titre} (${queteSemaine.progression}/${queteSemaine.objectif})` : "aucune"}
+- Arc en cours : ${arcLigne}`;
+}
+
 export async function buildSystemInstruction(): Promise<string> {
-  const [profil, poidsDesc, seancesDesc] = await Promise.all([getProfil(), listPoids(60), listSeances(8)]);
+  const [profil, poidsDesc, seancesDesc, contexteGamification] = await Promise.all([
+    getProfil(),
+    listPoids(60),
+    listSeances(8),
+    buildContexteGamification(),
+  ]);
   const poidsAsc = [...poidsDesc].reverse();
 
   const dernierPoids = poidsDesc[0] ?? null;
@@ -55,12 +87,15 @@ export async function buildSystemInstruction(): Promise<string> {
 ${seancesRecentesTexte}
 ${derniereSemaine ? `- Fréquence de la semaine du ${derniereSemaine.label} : ${derniereSemaine.count} séance(s)` : ""}
 
+${contexteGamification}
+
 ## Règles impératives
 1. Le temps disponible aujourd'hui n'est PAS stocké en base. S'il n'a pas été donné dans les derniers messages de cette conversation, demande-le avant de proposer une séance chronométrée.
 2. Propose des séances adaptées à l'équipement disponible et au temps donné — jamais un exercice nécessitant du matériel non listé.
 3. Commente la tendance réelle (plateau/régression/progression) quand c'est pertinent, sans être insistant à chaque message.
 4. Appelle l'outil update_profil UNIQUEMENT quand Victor énonce clairement un fait nouveau ou changé sur son profil (objectif, échéance, équipement, contrainte de santé, préférence). Ne l'appelle jamais pour une hypothèse, une question, ou le temps disponible du jour.
-5. Ne remplis jamais le profil "au forceps" : c'est une vraie conversation, pas un formulaire déguisé.`;
+5. Ne remplis jamais le profil "au forceps" : c'est une vraie conversation, pas un formulaire déguisé.
+6. Tu peux commenter librement le niveau, le streak, la quête active ou l'arc en cours ci-dessus — mais en LECTURE SEULE : tu n'attribues et ne modifies jamais toi-même l'XP, une quête ou un arc, il n'existe aucun outil pour ça.`;
 }
 
 export async function buildHistorique(): Promise<Content[]> {

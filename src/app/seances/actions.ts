@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { addSeance } from "@/db/seances";
+import { enregistrerSeance } from "@/db/activites";
 
 const seanceSchema = z.object({
   type: z.string().min(1),
@@ -26,7 +26,7 @@ export async function saveSeance(formData: FormData) {
     ressenti: (formData.get("ressenti") as string) || null,
   });
 
-  await addSeance({
+  await enregistrerSeance({
     type: parsed.type,
     dureeMinutes: parsed.dureeMinutes,
     exercices: splitList(parsed.exercices),
@@ -34,4 +34,6 @@ export async function saveSeance(formData: FormData) {
   });
 
   revalidatePath("/seances");
+  revalidatePath("/");
+  revalidatePath("/quetes");
 }

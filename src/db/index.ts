@@ -8,3 +8,6 @@ export function getSql() {
   }
   return _sql;
 }
+
+/** Client SQL générique (connexion directe ou intérieur d'une transaction `sql.begin`) — interface commune à `Sql` et `TransactionSql`. */
+export type SqlClient = postgres.ISql;

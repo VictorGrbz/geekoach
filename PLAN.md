@@ -130,14 +130,25 @@ Note pour l'Artisan : cette étape gagnerait à être menée avec des subagents 
 - Aucun bug trouvé, aucun correctif nécessaire. `npm run build` propre.
 - Rien n'est commité (même règle qu'à l'Étape 3 : cycle Git via `/commit`, à faire par Victor quand il le souhaite).
 
-## Étape 5 : gamification complète (V1 sans report)
+## Étape 5 : gamification complète (V1 sans report) — Fait
 
-- **Objectif** : implémenter dès la V1 l'intégralité de la couche de gamification — système de niveaux et d'XP, quêtes quotidiennes/hebdomadaires avec récompenses, arcs narratifs (cycles de 4-6 semaines avec thème et objectif clé), boss fights (défi mensuel clôturant un arc), streaks/combo (régularité, cassure en cas d'arrêt), succès/achievements à des jalons. Habillée dans l'identité visuelle JRPG rétro-arcade synthwave de l'Étape 2.
+- **Objectif** : implémenter dès la V1 l'intégralité de la couche de gamification — système de niveaux et d'XP, quêtes quotidiennes/hebdomadaires avec récompenses, arcs narratifs (cycles de 4-6 semaines avec thème et objectif clé), boss fights (défi mensuel clôturant un arc), streaks/combo (régularité, cassure en cas d'arrêt), succès/achievements à des jalons. Habillée dans l'identité visuelle de la carte de Hallownest livrée à l'Étape 2 (la mention "synthwave" ici était un résidu du brief abandonné, corrigée).
 - **Fichiers concernés** : modèles de données de gamification, logique de calcul XP/niveaux/streaks, UI dédiée (barres XP, cadres de quête, écran de boss fight, écran de succès).
 - **Destination** : `livrables/sites-web/geekoach/`.
 - **Critère de fait** : chaque séance/objectif complété rapporte de l'XP visible et peut faire monter de niveau, une quête peut être suivie et validée, un arc peut se clore par un boss fight, un streak est suivi et peut se casser, un achievement peut se débloquer à un jalon.
 
 Note pour l'Artisan : étape la plus lourde en architecture (plusieurs systèmes de progression interdépendants) — subagents Explore/Plan recommandés pour concevoir le modèle de données avant d'implémenter.
+
+**Fait** — conçu via subagents Explore/Plan comme suggéré, puis implémenté et vérifié de bout en bout avec des données de test temporaires (nettoyées après coup) :
+- Nouvelles tables `gamification_etat` (singleton XP/streak), `xp_evenements` (journal), `arcs_narratifs` (contenu en données, un seul actif à la fois via index unique partiel), `quetes_instances` (générées depuis un catalogue statique en code), `achievements_debloques` (définitions statiques en code, table de déblocage uniquement).
+- Logique pure dans `src/lib/xp.ts` (courbe de niveau triangulaire, calcul de streak), `src/lib/quetes-catalogue.ts`, `src/lib/achievements-catalogue.ts`, `src/lib/arcs.ts`.
+- Orchestration transactionnelle `src/db/activites.ts` (`enregistrerSeance`/`enregistrerPoids`) : une séance ou un poids enregistré via les formulaires existants fait progresser XP/streak/quêtes/arc automatiquement dans la même transaction que l'insertion — pas de bouton de validation séparé, et un échec annule l'insertion elle-même (cohérence garantie).
+- Arc pilote *Sortir de Dirtmouth* rédigé et scellé (thème, objectif de 12 séances sur 5 semaines, boss *La Sentinelle de la Crypte Oubliée*) ; la structure permet à Victor d'ajouter la suite par un simple `INSERT` SQL.
+- Coach Gemini : nouvelle section "Progression" dans `coach-context.ts`, lecture seule (niveau, streak, quête active, arc en cours), aucun nouveau function calling — confirmé par un échange réel où le coach commente niveau et quêtes sans y toucher.
+- UI : page `/quetes` (XP bar, quêtes en cours, panneau d'arc/boss avec accent amber, succès, journal), région IV de l'accueil vivante (au lieu de "sous la brume"), niveau affiché sur `/seances` et `/poids`. Pas de nouvelle dépendance d'animation (transitions CSS pures), cohérent avec le reste du projet.
+- Bug trouvé et corrigé en vérifiant : `derniere_activite` (colonne DATE) remontait de Postgres en objet `Date` et non en string, cassant la comparaison de streak au sein du même jour (même piège que le bug `profil.echeance` de l'Étape 3) — corrigé dans `src/db/gamification.ts` et `src/db/quetes.ts`.
+- Vérifié en conditions réelles : XP/niveau visibles après chaque séance/pesée, quête complétée automatiquement (sceau), streak prolongé (jour consécutif) et cassé (jour d'écart) correctement calculés, cycle complet arc → boss fight → clôture → achievement débloqué, bonus XP objectif de poids crédité une seule fois. `npm run build` et `npm run lint` propres.
+- Rien n'est commité (même règle que les étapes précédentes : cycle Git via `/commit`, à faire par Victor quand il le souhaite).
 
 ## Étape 6 : accès distant sécurisé
 

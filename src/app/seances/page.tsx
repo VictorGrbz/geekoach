@@ -5,6 +5,8 @@ import { PageHeader } from "@/components/page-header";
 import { SeancesChart } from "@/components/seances-chart";
 import { Field, buttonClass, inputClass } from "@/components/field";
 import { agregerParSemaine, debutSemaineCourante, filtrerParPeriode } from "@/lib/stats";
+import { getGamificationEtat } from "@/db/gamification";
+import { progressionNiveau } from "@/lib/xp";
 
 export const dynamic = "force-dynamic";
 
@@ -23,10 +25,11 @@ export default async function SeancesPage({
   const periodeJours = periode ? Number(periode) : 84;
   const periodeActive = Number.isFinite(periodeJours) ? periodeJours : null;
 
-  const seances = await listSeances(500);
+  const [seances, gamificationEtat] = await Promise.all([listSeances(500), getGamificationEtat()]);
   const seancesAsc = [...seances].reverse();
   const debutSemaine = debutSemaineCourante();
   const cetteSemaine = seances.filter((s) => new Date(s.effectueeA) >= debutSemaine).length;
+  const progression = progressionNiveau(gamificationEtat.xpTotal);
 
   const fenetre = filtrerParPeriode(
     seancesAsc.map((s) => ({ ...s, date: s.effectueeA })),
@@ -40,7 +43,7 @@ export default async function SeancesPage({
         numeral="III"
         title="Séances"
         description="Chaque séance loguée trace une marque sur la région — la fréquence hebdomadaire se lit d'un coup d'œil."
-        meta={`${cetteSemaine} cette semaine`}
+        meta={`${cetteSemaine} cette semaine · Niveau ${progression.niveau} (${progression.xpDansNiveau}/${progression.xpRequisNiveau} XP)`}
       />
 
       <div className="mx-auto flex max-w-3xl flex-col gap-10 px-6 py-10 sm:px-10">
