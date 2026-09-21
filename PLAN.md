@@ -150,7 +150,7 @@ Note pour l'Artisan : étape la plus lourde en architecture (plusieurs systèmes
 - Vérifié en conditions réelles : XP/niveau visibles après chaque séance/pesée, quête complétée automatiquement (sceau), streak prolongé (jour consécutif) et cassé (jour d'écart) correctement calculés, cycle complet arc → boss fight → clôture → achievement débloqué, bonus XP objectif de poids crédité une seule fois. `npm run build` et `npm run lint` propres.
 - Rien n'est commité (même règle que les étapes précédentes : cycle Git via `/commit`, à faire par Victor quand il le souhaite).
 
-## Étape 6 : accès distant sécurisé
+## Étape 6 : accès distant sécurisé — Fait (hors `infra.md`)
 
 - **Objectif** : exposer le portail sur `geekoach.jess-vic.ovh` (Cloudflare Tunnel) protégé par Cloudflare Access limité à `victor.garbez@gmail.com`, pour un accès mobile et PC depuis n'importe où sans système d'authentification applicatif.
 - **Fichiers concernés** : configuration Coolify (déploiement + sous-domaine), politique Cloudflare Access.
@@ -159,11 +159,12 @@ Note pour l'Artisan : étape la plus lourde en architecture (plusieurs systèmes
 
 Étape entièrement manuelle côté dashboards externes (Coolify, Cloudflare) — aucun outil ne permet de l'automatiser depuis Claude Code. Guide détaillé écrit dans `docs/COOLIFY-TUNNEL.md` (remplace le `docs/CLOUDFLARE.md` de `portfolio-victor`, périmé depuis la bascule Vercel → Coolify+Tunnel du 2026-09-03). Checklist pour Victor :
 
-- [ ] Coolify : app `geekoach` créée depuis le repo GitHub, variables d'environnement de prod renseignées (`DATABASE_URL` interne au réseau Coolify — pas l'URL locale via tunnel SSH —, `GEMINI_API_KEY`), déploiement vérifié.
-- [ ] Cloudflare Tunnel : sous-domaine `geekoach.jess-vic.ovh` routé sur le tunnel existant du ProDesk (même tunnel que restaurant/boutique/reservation, pas un nouveau).
-- [ ] Cloudflare Zero Trust Access : application `Geekoach` sur `geekoach.jess-vic.ovh`, policy `Allow` limitée à `victor.garbez@gmail.com` seul.
-- [ ] Testé depuis un mobile hors réseau local (critère de fait).
-- [ ] `context/infra.md` mis à jour (nouvelle ligne du tableau + référence vers `docs/COOLIFY-TUNNEL.md`) — à valider avec Victor avant modification, ce fichier n'étant pas piloté par ce projet.
+- [x] Coolify : app `geekoach` créée depuis le repo GitHub, variables d'environnement de prod renseignées (`DATABASE_URL` interne au réseau Coolify — pas l'URL locale via tunnel SSH —, `GEMINI_API_KEY`), déploiement vérifié.
+- [x] Cloudflare Tunnel : sous-domaine `geekoach.jess-vic.ovh` routé sur le tunnel existant du ProDesk (même tunnel que restaurant/boutique/reservation, pas un nouveau).
+- [x] Cloudflare Zero Trust Access : application `Geekoach` sur `geekoach.jess-vic.ovh`, policy `Allow` limitée à `victor.garbez@gmail.com` seul.
+- [x] Testé depuis un mobile hors réseau local (critère de fait).
+- Reste à faire plus tard : changer le mot de passe Postgres (exposé dans un chat), puis mettre à jour `DATABASE_URL` dans Coolify et `.env.local` ; révoquer le token API Coolify.
+- [x] `context/infra.md` mis à jour (ligne geekoach du tableau + référence vers `docs/COOLIFY-TUNNEL.md`), validé par Victor le 2026-09-21.
 
 ## Étape 7 : Finalisation — Fait (P0+P1)
 
