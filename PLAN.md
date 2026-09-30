@@ -150,7 +150,7 @@ Note pour l'Artisan : étape la plus lourde en architecture (plusieurs systèmes
 - Vérifié en conditions réelles : XP/niveau visibles après chaque séance/pesée, quête complétée automatiquement (sceau), streak prolongé (jour consécutif) et cassé (jour d'écart) correctement calculés, cycle complet arc → boss fight → clôture → achievement débloqué, bonus XP objectif de poids crédité une seule fois. `npm run build` et `npm run lint` propres.
 - Rien n'est commité (même règle que les étapes précédentes : cycle Git via `/commit`, à faire par Victor quand il le souhaite).
 
-## Étape 6 : accès distant sécurisé — Fait (hors `infra.md`)
+## Étape 6 : accès distant sécurisé — Fait
 
 - **Objectif** : exposer le portail sur `geekoach.jess-vic.ovh` (Cloudflare Tunnel) protégé par Cloudflare Access limité à `victor.garbez@gmail.com`, pour un accès mobile et PC depuis n'importe où sans système d'authentification applicatif.
 - **Fichiers concernés** : configuration Coolify (déploiement + sous-domaine), politique Cloudflare Access.
